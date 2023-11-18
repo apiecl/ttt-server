@@ -1,0 +1,19 @@
+{
+  "name": "ttt-server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "npx tsx src/main.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.2",
+    "tsx": "^4.1.3"
+  }
+}
