@@ -85,21 +85,21 @@ const sensors = new Server({
   },
 });
 
+const io = new Server({
+  cors: {
+    origin: config.authorized_origin_ttt,
+  },
+});
+
 sensors.on("data", (data) => {
   if (!connectionState) return;
   const parsedData = JSON.parse(data);
-  const io = new Server({
-    cors: {
-      origin: config.authorized_origin_ttt,
-    },
-  });
 
   io.on("connection", (socket) => {
     console.log("ttt server connected");
     socket.emit("data", parsedData);
   });
 
-  io.emit("data", parsedData);
   io.listen(8000);
 });
 
