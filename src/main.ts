@@ -1,10 +1,16 @@
 import { Server } from "socket.io";
+import { config } from "./config";
 
 const MAX_VALUE = 209;
 const NUMBER_CHANNELS = 12;
 const initialValues: number[] = [];
 for (let i = 0; i < NUMBER_CHANNELS; i++) {
   initialValues.push(MAX_VALUE);
+}
+
+function randomInt(min: number, max: number) {
+  // min and max included
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 interface sensorOutput {
@@ -47,42 +53,59 @@ export enum sensorNumber {
   Two = 2,
 }
 
-const io = new Server({
-  cors: {
-    origin: "http://127.0.0.1:5173",
-  },
-});
-
 function generateIncrementalOutput(
   prevSensor: number[],
   sensorNo: number,
   calibrate: boolean
 ): Partial<sensorOutput> {
-  const newValues:Partial<sensorOutput> = {}; 
+  const newValues: Partial<sensorOutput> = {};
   newValues.s = sensorNo;
   newValues.c = calibrate;
 
   for (let i = 0; i < NUMBER_CHANNELS; i++) {
     const currentValue: number = prevSensor[i];
-    const key:channel = i.toString();
-    if(currentValue > 0) {
-        (initialValues as unknown as variant)[key] = currentValue - 1; 
-       (newValues as unknown as variant)[key] = currentValue - 1;
+    const key: channel = i.toString();
+    if (currentValue > 0) {
+      (initialValues as unknown as variant)[key] = currentValue - 1;
+      (newValues as unknown as variant)[key] = currentValue - 1;
     } else {
-        (initialValues as unknown as variant)[key] = MAX_VALUE; 
-        (newValues as unknown as variant)[i] = MAX_VALUE;
+      (initialValues as unknown as variant)[key] = MAX_VALUE;
+      (newValues as unknown as variant)[i] = MAX_VALUE;
     }
   }
 
   return newValues;
 }
 
+let connectionState: boolean = false;
 
-
-io.on("connection", (socket) => {
-  setInterval(() => {
-    socket.emit("data", generateIncrementalOutput(initialValues, 1, false));
-  }, 16.6);
+const sensors = new Server({
+  cors: {
+    origin: config.authorized_origin_sensors,
+  },
 });
 
-io.listen(8989);
+sensors.on("data", (data) => {
+  if (!connectionState) return;
+  const parsedData = JSON.parse(data);
+  const io = new Server({
+    cors: {
+      origin: config.authorized_origin_ttt,
+    },
+  });
+
+  io.on("connection", (socket) => {
+    console.log("ttt server connected");
+    socket.emit("data", parsedData);
+  });
+
+  io.emit("data", parsedData);
+  io.listen(8000);
+});
+
+sensors.on("connection", () => {
+  connectionState = true;
+  console.log("sensors server connected");
+});
+
+sensors.listen(8989);
