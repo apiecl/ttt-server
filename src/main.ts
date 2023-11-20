@@ -73,7 +73,7 @@ function generateIncrementalOutput(
 
 const io = new Server({
   cors: {
-    origin: "http://127.0.0.1:5173",
+    origin: "*",
   },
 });
 
@@ -82,6 +82,7 @@ io.on("connection", (socket) => {
     const parsed = JSON.parse(data);
     socket.emit("data-processed", parsed);
   });
+
   setInterval(() => {
     socket.emit(
       "data-random",
