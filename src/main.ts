@@ -47,41 +47,46 @@ export enum sensorNumber {
   Two = 2,
 }
 
-const io = new Server({
-  cors: {
-    origin: "http://127.0.0.1:5173",
-  },
-});
-
 function generateIncrementalOutput(
   prevSensor: number[],
   sensorNo: number,
   calibrate: boolean
 ): Partial<sensorOutput> {
-  const newValues:Partial<sensorOutput> = {}; 
+  const newValues: Partial<sensorOutput> = {};
   newValues.s = sensorNo;
   newValues.c = calibrate;
 
   for (let i = 0; i < NUMBER_CHANNELS; i++) {
     const currentValue: number = prevSensor[i];
-    const key:channel = i.toString();
-    if(currentValue > 0) {
-        (initialValues as unknown as variant)[key] = currentValue - 1; 
-       (newValues as unknown as variant)[key] = currentValue - 1;
+    const key: channel = i.toString();
+    if (currentValue > 0) {
+      (initialValues as unknown as variant)[key] = currentValue - 1;
+      (newValues as unknown as variant)[key] = currentValue - 1;
     } else {
-        (initialValues as unknown as variant)[key] = MAX_VALUE; 
-        (newValues as unknown as variant)[i] = MAX_VALUE;
+      (initialValues as unknown as variant)[key] = MAX_VALUE;
+      (newValues as unknown as variant)[i] = MAX_VALUE;
     }
   }
 
   return newValues;
 }
 
-
+const io = new Server({
+  cors: {
+    origin: "http://127.0.0.1:5173",
+  },
+});
 
 io.on("connection", (socket) => {
+  socket.on("data", (data) => {
+    const parsed = JSON.parse(data);
+    socket.emit("data-processed", parsed);
+  });
   setInterval(() => {
-    socket.emit("data", generateIncrementalOutput(initialValues, 1, false));
+    socket.emit(
+      "data-random",
+      generateIncrementalOutput(initialValues, 1, false)
+    );
   }, 16.6);
 });
 
