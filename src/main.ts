@@ -1,5 +1,4 @@
 import { Server } from "socket.io";
-import { config } from "./config";
 
 const MAX_VALUE = 209;
 const NUMBER_CHANNELS = 12;
@@ -8,10 +7,6 @@ for (let i = 0; i < NUMBER_CHANNELS; i++) {
   initialValues.push(MAX_VALUE);
 }
 
-function randomInt(min: number, max: number) {
-  // min and max included
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
 
 interface sensorOutput {
   0: number;
@@ -53,6 +48,30 @@ export enum sensorNumber {
   Two = 2,
 }
 
+  //Randomize
+  function generateRandomOutput(): Partial<sensorOutput> {
+    const newValues: Partial<sensorOutput> = {};
+    
+    
+        for (let i = 0; i < 12; i++) {
+          (newValues as unknown as variant)[i.toString()] = randomInt(
+            0,
+            MAX_VALUE,
+          );
+        }
+        newValues.s = randomInt(1, 2);
+        newValues.c = false;
+        
+    
+      return newValues;
+    }
+  // }
+
+  function randomInt(min: number, max: number) {
+    // min and max included
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
 function generateIncrementalOutput(
   prevSensor: number[],
   sensorNo: number,
@@ -77,35 +96,37 @@ function generateIncrementalOutput(
   return newValues;
 }
 
-let connectionState: boolean = false;
-
 const sensors = new Server({
   cors: {
-    origin: config.authorized_origin_sensors,
+    origin: "*",
   },
 });
 
-const io = new Server({
-  cors: {
-    origin: config.authorized_origin_ttt,
-  },
-});
+let currentSensor:number;
 
-sensors.on("data", (data) => {
-  if (!connectionState) return;
-  const parsedData = JSON.parse(data);
+setInterval(() => {
+  if(currentSensor !== 1) {
+    currentSensor = 1;
+  } else {
+    currentSensor = 2;
+  }
+  
+}, 5000)
 
-  io.on("connection", (socket) => {
-    console.log("ttt server connected");
-    socket.emit("data", parsedData);
+sensors.on("connection", (socket) => {
+  socket.on("data", (data) => {
+    const parsed = JSON.parse(data);
+    socket.emit("data-processed", parsed);
   });
 
-  io.listen(8000);
+  setInterval(() => {
+    socket.emit(
+      "data-random",
+      //generateIncrementalOutput(initialValues, currentSensor, false)
+      generateRandomOutput()
+    );
+  }, 16.6);
 });
 
-sensors.on("connection", () => {
-  connectionState = true;
-  console.log("sensors server connected");
-});
 
 sensors.listen(8989);
