@@ -13,7 +13,6 @@ const server = net.createServer((socket) => {
 
     socket.on('data', (data) => {
       clientdata = JSON.parse(data as unknown as string);
-      //console.log(clientdata);
       if (!count){
         return JSON.stringify(data, null,"   ");
       }
