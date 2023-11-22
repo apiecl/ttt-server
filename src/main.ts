@@ -47,6 +47,30 @@ export enum sensorNumber {
   Two = 2,
 }
 
+  //Randomize
+  function generateRandomOutput(): Partial<sensorOutput> {
+    const newValues: Partial<sensorOutput> = {};
+    
+    
+        for (let i = 0; i < 12; i++) {
+          (newValues as unknown as variant)[i.toString()] = randomInt(
+            0,
+            MAX_VALUE,
+          );
+        }
+        newValues.s = randomInt(1, 2);
+        newValues.c = false;
+        
+    
+      return newValues;
+    }
+  // }
+
+  function randomInt(min: number, max: number) {
+    // min and max included
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
 function generateIncrementalOutput(
   prevSensor: number[],
   sensorNo: number,
@@ -77,6 +101,17 @@ const io = new Server({
   },
 });
 
+let currentSensor:number;
+
+setInterval(() => {
+  if(currentSensor !== 1) {
+    currentSensor = 1;
+  } else {
+    currentSensor = 2;
+  }
+  
+}, 5000)
+
 io.on("connection", (socket) => {
   socket.on("data", (data) => {
     const parsed = JSON.parse(data);
@@ -86,7 +121,8 @@ io.on("connection", (socket) => {
   setInterval(() => {
     socket.emit(
       "data-random",
-      generateIncrementalOutput(initialValues, 1, false)
+      //generateIncrementalOutput(initialValues, currentSensor, false)
+      generateRandomOutput()
     );
   }, 16.6);
 });
