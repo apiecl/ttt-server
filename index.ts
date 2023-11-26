@@ -5,33 +5,39 @@ const net = require("node:net");
 const express = require("express");
 const { Server } = require("socket.io");
 const { createServer } = require("node:http");
-const { join } = require('node:path');
-const EventEmitter = require('events');
+const { join } = require("node:path");
+const EventEmitter = require("events");
 const eventEmitter = new EventEmitter();
 
 const app = express();
 const clientServer = createServer(app);
 const io = new Server(clientServer, {
   cors: {
-    origin: '*'
-  }
+    origin: "*",
+  },
 });
 
 var n = 0;
 let clientdata = {};
-const stream = fs.createWriteStream("./output/data.csv", {flags: 'a'});
-const server = net.createServer((socket:any) => {
-  socket.on("data", (data:any) => {
+const date = new Date(Date.now());
+console.log(date);
+const stream = fs.createWriteStream(
+  `./output/ttt-${date.getDate()}-${date.getMonth()}-${date.getFullYear()}_${date.getHours()}-${date.getMinutes()}.csv`,
+  { flags: "a" }
+);
+
+const server = net.createServer((socket: any) => {
+  socket.on("data", (data: any) => {
     clientdata = JSON.parse(data as unknown as string);
-    if(args.includes('--debug')) {
+    if (args.includes("--debug")) {
       console.log(clientdata);
-      stream.write(JSON.stringify(clientdata) + ',\n', (err: Error) => {
-        if(err) {
+      stream.write(JSON.stringify(clientdata) + ",\n", (err: Error) => {
+        if (err) {
           console.error(err);
         }
-      })
+      });
     }
-    eventEmitter.emit('data-received');
+    eventEmitter.emit("data-received");
     if (!count) {
       return JSON.stringify(data, null, "   ");
     } else {
@@ -56,8 +62,8 @@ app.get("/", (req: any, res: any) => {
   res.end(JSON.stringify(clientdata));
 });
 
-app.get('/', (req:any, res:any) => {
-  res.sendFile(join(__dirname, 'index.html'));
+app.get("/", (req: any, res: any) => {
+  res.sendFile(join(__dirname, "index.html"));
 });
 
 clientServer.listen(3000);
@@ -65,12 +71,12 @@ console.log("Client server started at port 3000");
 
 io.on("connection", (socket: any) => {
   console.log("a user connected");
-  if(args.includes('--debug')) {
-    socket.emit('data-debug', true);
+  if (args.includes("--debug")) {
+    socket.emit("data-debug", true);
   } else {
-    socket.emit('data-debug', false);
+    socket.emit("data-debug", false);
   }
-  eventEmitter.on('data-received', () => {
-    socket.emit('data-parsed', clientdata);
+  eventEmitter.on("data-received", () => {
+    socket.emit("data-parsed", clientdata);
   });
 });
