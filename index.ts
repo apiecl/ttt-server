@@ -22,6 +22,9 @@ let clientdata = {};
 const server = net.createServer((socket:any) => {
   socket.on("data", (data:any) => {
     clientdata = JSON.parse(data as unknown as string);
+    if(args.includes('--debug')) {
+      console.log(clientdata);
+    }
     eventEmitter.emit('data-received');
     if (!count) {
       return JSON.stringify(data, null, "   ");
@@ -62,10 +65,6 @@ io.on("connection", (socket: any) => {
     socket.emit('data-debug', false);
   }
   eventEmitter.on('data-received', () => {
-    console.log(clientdata);
-    if(args.includes('--debug')) {
-      socket.emit('data-parsed', clientdata);
-    }
-    
+    socket.emit('data-parsed', clientdata);
   });
 });
