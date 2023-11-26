@@ -1,7 +1,7 @@
 const args = process.argv.slice(2);
 const count = "--count" == args[0]; // Usar este flag para contar cantidad de objetos recibidos por segundo
-import net from "node:net";
 
+const net = require("node:net");
 const express = require("express");
 const { Server } = require("socket.io");
 const { createServer } = require("node:http");
@@ -19,8 +19,8 @@ const io = new Server(clientServer, {
 
 var n = 0;
 let clientdata = {};
-const server = net.createServer((socket) => {
-  socket.on("data", (data) => {
+const server = net.createServer((socket:any) => {
+  socket.on("data", (data:any) => {
     clientdata = JSON.parse(data as unknown as string);
     eventEmitter.emit('data-received');
     if (!count) {
@@ -62,6 +62,10 @@ io.on("connection", (socket: any) => {
     socket.emit('data-debug', false);
   }
   eventEmitter.on('data-received', () => {
-    socket.emit('data-parsed', clientdata);
+    console.log(clientdata);
+    if(args.includes('--debug')) {
+      socket.emit('data-parsed', clientdata);
+    }
+    
   });
 });
