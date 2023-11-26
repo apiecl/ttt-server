@@ -1,6 +1,5 @@
 const args = process.argv.slice(2);
 const count = "--count" == args[0]; // Usar este flag para contar cantidad de objetos recibidos por segundo
-
 import net from "node:net";
 
 const express = require("express");
@@ -57,6 +56,9 @@ console.log("Client server started at port 3000");
 
 io.on("connection", (socket: any) => {
   console.log("a user connected");
+  if(args.includes('--debug')) {
+    socket.emit('data-debug', true);
+  }
   eventEmitter.on('data-received', () => {
     socket.emit('data-parsed', clientdata);
   });
