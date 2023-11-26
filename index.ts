@@ -58,6 +58,8 @@ io.on("connection", (socket: any) => {
   console.log("a user connected");
   if(args.includes('--debug')) {
     socket.emit('data-debug', true);
+  } else {
+    socket.emit('data-debug', false);
   }
   eventEmitter.on('data-received', () => {
     socket.emit('data-parsed', clientdata);
