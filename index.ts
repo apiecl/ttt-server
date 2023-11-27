@@ -19,23 +19,23 @@ const io = new Server(clientServer, {
 
 var n = 0;
 let clientdata = {};
-const date = new Date(Date.now());
-console.log(date);
-const stream = fs.createWriteStream(
-  `./output/ttt-${date.getDate()}-${date.getMonth()}-${date.getFullYear()}_${date.getHours()}-${date.getMinutes()}.csv`,
-  { flags: "a" }
-);
+// const date = new Date(Date.now());
+// console.log(date);
+// const stream = fs.createWriteStream(
+//   `./output/ttt-${date.getDate()}-${date.getMonth()}-${date.getFullYear()}_${date.getHours()}-${date.getMinutes()}.csv`,
+//   { flags: "a" }
+// );
 
 const server = net.createServer((socket: any) => {
   socket.on("data", (data: any) => {
     clientdata = JSON.parse(data as unknown as string);
     if (args.includes("--debug")) {
       console.log(clientdata);
-      stream.write(JSON.stringify(clientdata) + ",\n", (err: Error) => {
-        if (err) {
-          console.error(err);
-        }
-      });
+      //stream.write(JSON.stringify(clientdata) + ",\n", (err: Error) => {
+        // if (err) {
+        //   console.error(err);
+        // }
+      //});
     }
     eventEmitter.emit("data-received");
     if (!count) {
